@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oasis • Pre-Cotización</title>
+  <meta name="description" content="Pre-cotización automática Oasis: instalación, reparación (diagnóstico) y mantenimiento." />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase (sin build, sin bundlers) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <div class="brand">
+        <div class="brand__mark">OA</div>
+        <div class="brand__text">
+          <div class="brand__title">Oasis Air Cleaner Services LLC</div>
+          <div class="brand__sub">Pre-cotización automática • Rápido • Claro • Sin compromiso</div>
+        </div>
+      </div>
+
+      <div class="trust">
+        <div class="trust__pill">✅ Respuesta en minutos</div>
+        <div class="trust__pill">🔒 Datos seguros</div>
+        <div class="trust__pill">📲 WhatsApp directo</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__copy">
+        <h1>Calcula tu <span class="accent">pre-cotización</span> en 60 segundos.</h1>
+        <p>Elige tu servicio, responde lo esencial y te damos un precio estimado basado en tus datos. Luego lo confirmamos contigo.</p>
+        <div class="hero__hint">Tip: si tienes varias unidades, aquí es donde empiezan los descuentos. 😄</div>
+      </div>
+
+      <div class="hero__card">
+        <div class="hero__cardTitle">Selecciona un servicio</div>
+        <div class="grid3">
+          <button class="btn btn--primary" data-service="instalacion">Instalación</button>
+          <button class="btn btn--primary" data-service="reparacion">Reparación (Diagnóstico)</button>
+          <button class="btn btn--primary" data-service="mantenimiento">Mantenimiento</button>
+        </div>
+        <div class="note">
+          Esto es una <b>pre-cotización</b>. El costo final se confirma por fotos/visita si aplica.
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP: CLIENT -->
+    <section class="card" id="stepClient" hidden>
+      <div class="card__head">
+        <div>
+          <h2>Datos de contacto</h2>
+          <p class="muted">Para enviarte el resumen y coordinar contigo.</p>
+        </div>
+        <span class="badge">Paso 1/2</span>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Nombre</span>
+          <input id="clientName" type="text" placeholder="Tu nombre" maxlength="80" />
+        </label>
+
+        <label class="field">
+          <span>Teléfono</span>
+          <input id="phone" type="tel" placeholder="787..." maxlength="20" />
+        </label>
+
+        <label class="field">
+          <span>Pueblo/Zona</span>
+          <input id="town" type="text" placeholder="Ej: Bayamón" maxlength="60" />
+        </label>
+
+        <label class="field">
+          <span>Preferencia</span>
+          <select id="prefContact">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="llamada">Llamada</option>
+            <option value="email">Email (próximamente)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--ghost" id="backToService">Volver</button>
+        <button class="btn btn--primary" id="goQuestions">Continuar</button>
+      </div>
+    </section>
+
+    <!-- INSTALLATION -->
+    <section class="card" id="qInstall" hidden>
+      <div class="card__head">
+        <div>
+          <h2>Instalación</h2>
+          <p class="muted">Precio = mano de obra + costo de unidad (si la compras con Oasis).</p>
+        </div>
+        <span class="badge">Paso 2/2</span>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Tamaño del equipo (BTU)</span>
+          <select id="installBtu">
+            <option value="12000">12,000 BTU</option>
+            <option value="18000">18,000 BTU</option>
+            <option value="24000">24,000 BTU</option>
+            <option value="36000">36,000 BTU</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>¿La unidad la trae el cliente?</span>
+          <select id="unitSource">
+            <option value="cliente">Sí, ya la tengo</option>
+            <option value="oasis">No, la compraría con Oasis</option>
+          </select>
+        </label>
+
+        <label class="field" id="unitCostWrap">
+          <span>Costo de la unidad (si compra con Oasis)</span>
+          <input id="unitCost" type="number" min="0" max="20000" placeholder="Ej: 950" />
+        </label>
+
+        <label class="field">
+          <span>Notas (opcional)</span>
+          <input id="installNotes" type="text" maxlength="120" placeholder="Ej: 2do piso, acceso estrecho, etc." />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--ghost" id="backToClient1">Volver</button>
+        <button class="btn btn--primary" id="calcInstall">Ver pre-cotización</button>
+      </div>
+    </section>
+
+    <!-- MAINTENANCE -->
+    <section class="card" id="qMaint" hidden>
+      <div class="card__head">
+        <div>
+          <h2>Mantenimiento</h2>
+          <p class="muted">Tarifas fijas. Si son más de 5 unidades: $50 por unidad.</p>
+        </div>
+        <span class="badge">Paso 2/2</span>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Tipo de mantenimiento</span>
+          <select id="maintType">
+            <option value="preventivo">Preventivo</option>
+            <option value="profundo">Profundo</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Cantidad de unidades</span>
+          <input id="units" type="number" min="1" max="30" value="1" />
+        </label>
+
+        <label class="field">
+          <span>Tamaño (rango)</span>
+          <select id="maintBtuRange">
+            <option value="12_36">12k a 36k</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Notas (opcional)</span>
+          <input id="notesMaint" type="text" maxlength="120" placeholder="Ej: 6 unidades, dos en techo" />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--ghost" id="backToClient2">Volver</button>
+        <button class="btn btn--primary" id="calcMaint">Ver pre-cotización</button>
+      </div>
+    </section>
+
+    <!-- REPAIR / DIAG -->
+    <section class="card" id="qRepair" hidden>
+      <div class="card__head">
+        <div>
+          <h2>Reparación (Diagnóstico)</h2>
+          <p class="muted">Diagnóstico por visita solo Área Metropolitana: $75.</p>
+        </div>
+        <span class="badge">Paso 2/2</span>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>¿Estás en Área Metropolitana?</span>
+          <select id="isMetro">
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+            <option value="nose">No sé</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Síntoma principal</span>
+          <select id="symptom">
+            <option value="nofria">No enfría</option>
+            <option value="gotea">Gotea / bota agua</option>
+            <option value="error">Tira código de error</option>
+            <option value="noseprende">No enciende</option>
+            <option value="ruido">Ruido/vibración</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Marca (opcional)</span>
+          <input id="brand" type="text" placeholder="Ej: Midea" maxlength="40" />
+        </label>
+
+        <label class="field">
+          <span>Modelo (opcional)</span>
+          <input id="model" type="text" placeholder="Ej: 12K Inverter" maxlength="60" />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--ghost" id="backToClient3">Volver</button>
+        <button class="btn btn--primary" id="calcRepair">Ver pre-cotización</button>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="card result" id="result" hidden>
+      <div class="result__top">
+        <div>
+          <h2>Tu pre-cotización</h2>
+          <p class="muted" id="breakdown">—</p>
+        </div>
+        <div class="result__price" id="range">$—</div>
+      </div>
+
+      <div class="result__actions">
+        <button class="btn btn--ghost" id="startOver">Nueva</button>
+        <a class="btn btn--primary" id="waBtn" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      </div>
+
+      <div class="note">
+        Guardamos tu solicitud para coordinar. Si tu aire pudiera hablar, ya estaría diciendo “por fin”. 😄
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>© <span id="year"></span> Oasis Air Cleaner Services LLC</div>
+      <div class="muted">Pre-cotización para clientes • Publicada desde GitHub Pages</div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
